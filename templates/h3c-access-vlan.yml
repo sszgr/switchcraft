@@ -1,0 +1,40 @@
+# H3C Access VLAN batch configuration template
+# Usage:
+# 1) interfaces: comma-separated interface list
+#    example: GigabitEthernet1/0/1,GigabitEthernet1/0/2
+# 2) access_vlan: target access VLAN ID
+# 3) In Execution Center (Serial mode), serial defaults below can be used directly
+
+name: H3C-Access-VLAN-Config
+device: h3c-comware
+description: Batch access VLAN configuration for H3C Comware interfaces.
+
+# Default serial parameters (can be overridden in UI)
+serial:
+  baudRate: 9600
+  dataBits: 8
+  stopBits: 1
+  parity: none
+  flowControl: none
+
+# Runtime parameters
+fields:
+  - key: interfaces
+    type: list
+    label: Interface List
+    required: true
+  - key: access_vlan
+    type: number
+    label: Access VLAN ID
+    required: true
+    default: 10
+
+# Command template (foreach expands for each interface item)
+script:
+  - system-view
+  - foreach iface in interfaces:
+  - '  interface {{iface}}'
+  - '  port link-type access'
+  - '  port access vlan {{access_vlan}}'
+  - '  quit'
+  - return

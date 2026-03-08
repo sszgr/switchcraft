@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+    />
+    <title>SwitchCraft</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="../node_modules/@xterm/xterm/css/xterm.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <div class="app-title">
+          <div class="title-row">
+            <h1>SwitchCraft <span id="appVersion" class="title-version"></span></h1>
+          </div>
+          <p id="headerSubtitle" class="subtitle"></p>
+        </div>
+        <div class="header-actions">
+          <label id="langLabel" for="langSelect" class="label-inline"></label>
+          <select id="langSelect" class="compact-select">
+            <option value="zh-CN">中文</option>
+            <option value="en-US">English</option>
+          </select>
+          <button id="aboutBtn" class="btn"></button>
+        </div>
+      </header>
+
+      <nav class="top-nav">
+        <button id="tabTemplate" class="nav-btn active"></button>
+        <button id="tabExecute" class="nav-btn"></button>
+      </nav>
+
+      <main>
+        <section id="pageTemplate" class="page active">
+          <div class="grid-template">
+            <aside class="panel">
+              <div class="panel-head">
+                <h2 id="tplListTitle"></h2>
+                <button id="reloadBtn" class="btn"></button>
+              </div>
+              <ul id="templateList" class="list"></ul>
+              <div class="column-actions">
+                <button id="newBtn" class="btn"></button>
+                <button id="deleteBtn" class="btn btn-danger"></button>
+              </div>
+            </aside>
+
+            <section class="panel editor-panel">
+              <div class="panel-head">
+                <h2 id="tplEditorTitle"></h2>
+                <div class="row-actions">
+                  <button id="saveBtn" class="btn btn-primary"></button>
+                </div>
+              </div>
+
+              <label id="fileNameLabel" class="label" for="fileNameInput"></label>
+              <input id="fileNameInput" type="text" placeholder="template.yml" />
+
+              <label id="yamlLabel" class="label" for="yamlEditor"></label>
+              <textarea id="yamlEditor" class="editor" spellcheck="false"></textarea>
+              <p id="editorStatus" class="hint"></p>
+            </section>
+          </div>
+        </section>
+
+        <section id="pageExecute" class="page">
+          <div class="grid-execute">
+            <section class="panel">
+              <div class="panel-head">
+                <div class="title-inline">
+                  <h2 id="execConfigTitle"></h2>
+                </div>
+                <span id="runStatus" class="status-pill"></span>
+              </div>
+
+              <div id="execConfigBody">
+                <label id="execTemplateLabel" class="label" for="execTemplateSelect"></label>
+                <select id="execTemplateSelect"></select>
+
+                <div class="serial-grid">
+                  <div>
+                    <label id="comPortLabel" class="label" for="portSelect"></label>
+                    <div class="inline-row">
+                      <select id="portSelect"></select>
+                      <button id="refreshPortsBtn" class="btn"></button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label id="modeLabel" class="label" for="modeSelect"></label>
+                    <select id="modeSelect">
+                      <option value="mock">Mock</option>
+                      <option value="serial">Serial</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label id="driverLabel" class="label" for="driverSelect"></label>
+                    <select id="driverSelect"></select>
+                  </div>
+
+                  <div>
+                    <label id="baudLabel" class="label" for="baudRateInput"></label>
+                    <input id="baudRateInput" type="number" value="9600" />
+                  </div>
+
+                  <div>
+                    <label id="dataBitsLabel" class="label" for="dataBitsSelect"></label>
+                    <select id="dataBitsSelect">
+                      <option value="8">8</option>
+                      <option value="7">7</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label id="stopBitsLabel" class="label" for="stopBitsSelect"></label>
+                    <select id="stopBitsSelect">
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label id="parityLabel" class="label" for="paritySelect"></label>
+                    <select id="paritySelect">
+                      <option value="none">none</option>
+                      <option value="even">even</option>
+                      <option value="odd">odd</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label id="flowLabel" class="label" for="flowSelect"></label>
+                    <select id="flowSelect">
+                      <option value="none">none</option>
+                      <option value="rtscts">rtscts</option>
+                      <option value="xonxoff">xonxoff</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="row-actions exec-config-actions">
+                  <button id="connectBtn" class="btn btn-primary" type="button"></button>
+                  <button id="disconnectBtn" class="btn" type="button"></button>
+                </div>
+              </div>
+
+              <div class="panel-head subhead">
+                <div class="title-inline">
+                  <h3 id="paramsTitle"></h3>
+                </div>
+              </div>
+              <div id="paramsBody">
+                <div id="templateSummary" class="hint"></div>
+                <form id="paramsForm" class="form"></form>
+              </div>
+
+              <div class="row-actions exec-actions">
+                <button id="previewBtn" class="btn"></button>
+                <button id="runBtn" class="btn btn-primary"></button>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div class="title-inline right-tab-group">
+                  <button id="tabPreviewPane" class="nav-btn active" type="button"></button>
+                  <button id="tabConsolePane" class="nav-btn" type="button"></button>
+                  <button id="tabLogPane" class="nav-btn" type="button"></button>
+                </div>
+                <span id="consoleState" class="status-pill"></span>
+              </div>
+
+              <section id="panePreview" class="right-pane active">
+                <p id="commandCount" class="hint"></p>
+                <pre id="previewBox" class="output right-output"></pre>
+                <div class="row-actions right-actions">
+                  <button id="previewCopyBtn" class="btn btn-compact" type="button"></button>
+                </div>
+              </section>
+
+              <section id="paneConsole" class="right-pane">
+                <div id="consoleBox" class="output terminal terminal-host right-output" tabindex="0"></div>
+                <div class="row-actions right-actions">
+                  <button id="clearConsoleBtn" class="btn btn-compact" type="button"></button>
+                </div>
+              </section>
+
+              <section id="paneLog" class="right-pane">
+                <pre id="opLogBox" class="output op-log-box right-output"></pre>
+                <div class="row-actions right-actions">
+                  <button id="clearLogBtn" class="btn btn-compact" type="button"></button>
+                </div>
+              </section>
+
+              <section class="latest-log-card">
+                <div id="latestExecLog" class="latest-exec-log"></div>
+              </section>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="aboutModal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="panel-head">
+          <h3 id="aboutTitle"></h3>
+          <button id="aboutCloseBtn" class="btn" type="button">×</button>
+        </div>
+        <p id="aboutDesc" class="hint about-desc"></p>
+        <div class="about-body">
+          <div class="about-meta">
+            <p id="aboutVersionLine" class="hint"></p>
+            <p id="aboutElectronLine" class="hint"></p>
+            <p class="hint">
+              <span id="aboutWechatPrefix"></span>
+              <span id="aboutWechatName"></span>
+            </p>
+            <p id="aboutWechatTip" class="hint"></p>
+            <p class="hint">
+              <span id="aboutAuthorPrefix"></span>
+              <a id="aboutAuthorLink" class="about-link" href="#" target="_blank" rel="noreferrer noopener"></a>
+            </p>
+            <p class="hint">
+              <span id="aboutProjectPrefix"></span>
+              <a id="aboutProjectLink" class="about-link" href="#" target="_blank" rel="noreferrer noopener"></a>
+            </p>
+          </div>
+          <div class="about-wechat-qr">
+            <img
+              id="aboutWechatQr"
+              class="about-wechat-qr-image"
+              src="./assets/wechat-qrcode.png"
+              alt="WeChat Official Account QR"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="deleteModal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="panel-head">
+          <h3 id="deleteTitle"></h3>
+          <button id="deleteCloseBtn" class="btn" type="button">×</button>
+        </div>
+        <p id="deleteMessage" class="hint"></p>
+        <div class="row-actions exec-actions about-actions">
+          <button id="deleteCancelBtn" class="btn" type="button"></button>
+          <button id="deleteConfirmBtn" class="btn btn-danger" type="button"></button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

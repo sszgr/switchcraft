@@ -1,0 +1,37 @@
+# Huawei VRP trunk batch configuration template
+# Usage:
+# 1) interfaces: comma-separated interface list
+#    example: GigabitEthernet0/0/1,GigabitEthernet0/0/2
+# 2) vlan: allowed VLANs on trunk interface
+#    example: all or 10 20 30
+
+name: Huawei-Trunk-Config
+device: huawei-vrp
+description: Batch trunk interface configuration for Huawei VRP switches.
+
+# Default serial parameters (can be overridden in UI)
+serial:
+  baudRate: 9600
+  dataBits: 8
+  stopBits: 1
+  parity: none
+  flowControl: none
+
+fields:
+  - key: interfaces
+    type: list
+    label: Interface List
+    required: true
+  - key: vlan
+    type: string
+    label: Permit VLAN
+    default: all
+
+script:
+  - system-view
+  - foreach iface in interfaces:
+  - '  interface {{iface}}'
+  - '  port link-type trunk'
+  - '  port trunk allow-pass vlan {{vlan}}'
+  - '  quit'
+  - return

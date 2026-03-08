@@ -1,0 +1,37 @@
+# Huawei VRP access VLAN batch configuration template
+# Usage:
+# 1) interfaces: comma-separated interface list
+#    example: GigabitEthernet0/0/1,GigabitEthernet0/0/2
+# 2) access_vlan: target access VLAN ID
+
+name: Huawei-Access-VLAN-Config
+device: huawei-vrp
+description: Batch access VLAN configuration for Huawei VRP switch interfaces.
+
+# Default serial parameters (can be overridden in UI)
+serial:
+  baudRate: 9600
+  dataBits: 8
+  stopBits: 1
+  parity: none
+  flowControl: none
+
+fields:
+  - key: interfaces
+    type: list
+    label: Interface List
+    required: true
+  - key: access_vlan
+    type: number
+    label: Access VLAN ID
+    required: true
+    default: 10
+
+script:
+  - system-view
+  - foreach iface in interfaces:
+  - '  interface {{iface}}'
+  - '  port link-type access'
+  - '  port default vlan {{access_vlan}}'
+  - '  quit'
+  - return

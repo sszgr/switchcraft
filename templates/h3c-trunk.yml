@@ -1,0 +1,42 @@
+# H3C Trunk batch configuration template
+# Usage:
+# 1) interfaces: comma-separated interface list
+#    example: GigabitEthernet1/0/1,GigabitEthernet1/0/2
+# 2) vlan: allowed VLANs for trunk port
+#    example: all or 10 20 30
+# 3) In Execution Center (Serial mode), serial defaults below can be used directly
+
+name: H3C-Trunk-Config
+device: h3c-comware
+description: Batch trunk interface configuration for H3C Comware.
+
+# Default serial parameters (can be overridden in UI)
+serial:
+  baudRate: 9600
+  dataBits: 8
+  stopBits: 1
+  parity: none
+  flowControl: none
+
+# Runtime parameters
+fields:
+  # Target interface list for batch configuration
+  - key: interfaces
+    type: list
+    label: Interface List
+    required: true
+  # Allowed VLANs on trunk interface
+  - key: vlan
+    type: string
+    label: Permit VLAN
+    default: all
+
+# Command template (foreach expands for each interface item)
+script:
+  - system-view
+  - foreach iface in interfaces:
+  - '  interface {{iface}}'
+  - '  port link-type trunk'
+  - '  port trunk permit vlan {{vlan}}'
+  - '  quit'
+  - return

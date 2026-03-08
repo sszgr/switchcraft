@@ -1,0 +1,37 @@
+# Cisco IOS access VLAN batch configuration template
+# Usage:
+# 1) interfaces: comma-separated interface list
+#    example: GigabitEthernet1/0/1,GigabitEthernet1/0/2
+# 2) access_vlan: target access VLAN ID
+
+name: Cisco-Access-VLAN-Config
+device: cisco-ios
+description: Batch access VLAN configuration for Cisco IOS switch interfaces.
+
+# Default serial parameters (can be overridden in UI)
+serial:
+  baudRate: 9600
+  dataBits: 8
+  stopBits: 1
+  parity: none
+  flowControl: none
+
+fields:
+  - key: interfaces
+    type: list
+    label: Interface List
+    required: true
+  - key: access_vlan
+    type: number
+    label: Access VLAN ID
+    required: true
+    default: 10
+
+script:
+  - configure terminal
+  - foreach iface in interfaces:
+  - '  interface {{iface}}'
+  - '  switchport mode access'
+  - '  switchport access vlan {{access_vlan}}'
+  - '  exit'
+  - end
