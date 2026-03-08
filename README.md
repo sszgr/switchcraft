@@ -2,8 +2,27 @@
 
 **English** | [中文](./README.zh-CN.md)
 
-SwitchCraft is an Electron desktop client for network-console automation.  
-It combines a GUI workflow (template editing, parameter input, preview, run) with a reusable execution core.
+<p align="center">
+  <img src="./docs/readme/icon.png" alt="SwitchCraft icon" width="96" />
+</p>
+
+SwitchCraft is an Electron desktop client for network-console automation.
+It combines a GUI workflow for template editing, parameter input, command preview, and execution with a reusable automation core.
+
+## Overview
+
+SwitchCraft is designed for engineers who need a repeatable desktop workflow for console-side network changes.
+You can prepare YAML-based command templates, fill runtime parameters in the UI, preview rendered commands before execution, and run them through serial or mock transport.
+
+## Screenshots
+
+### Template Workspace
+
+![SwitchCraft template workspace](./docs/readme/screenshot-template-workspace.png)
+
+### Execution Center
+
+![SwitchCraft execution center](./docs/readme/screenshot-execution-center.png)
 
 ## Features
 
@@ -23,6 +42,10 @@ It combines a GUI workflow (template editing, parameter input, preview, run) wit
 - `js-yaml`
 - `serialport` (for real COM ports)
 
+## License
+
+Apache License 2.0. See [LICENSE](./LICENSE).
+
 ## Quick Start
 
 ```bash
@@ -30,6 +53,16 @@ npm install
 npm run build
 npm start
 ```
+
+## Image Assets For This README
+
+Place the README images in:
+
+- `docs/readme/icon.png`
+- `docs/readme/screenshot-template-workspace.png`
+- `docs/readme/screenshot-execution-center.png`
+
+You can replace them with files of the same names later, and the README will render them automatically.
 
 ## Scripts
 

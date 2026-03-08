@@ -2,6 +2,7 @@
   "name": "switchcraft",
   "version": "0.2.0",
   "private": true,
+  "license": "Apache-2.0",
   "description": "SwitchCraft V1 with Electron GUI + parameterized console automation core.",
   "type": "module",
   "main": "dist/electron/main.js",
