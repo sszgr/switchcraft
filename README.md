@@ -18,11 +18,11 @@ You can prepare YAML-based command templates, fill runtime parameters in the UI,
 
 ### Template Workspace
 
-![SwitchCraft template workspace](./docs/readme/screenshot-template-workspace.png)
+![SwitchCraft template workspace](./docs/readme/screenshot-template-workspace-en.png)
 
 ### Execution Center
 
-![SwitchCraft execution center](./docs/readme/screenshot-execution-center.png)
+![SwitchCraft execution center](./docs/readme/screenshot-execution-center-en.png)
 
 ## Features
 
@@ -59,8 +59,8 @@ npm start
 Place the README images in:
 
 - `docs/readme/icon.png`
-- `docs/readme/screenshot-template-workspace.png`
-- `docs/readme/screenshot-execution-center.png`
+- `docs/readme/screenshot-template-workspace-en.png`
+- `docs/readme/screenshot-execution-center-en.png`
 
 You can replace them with files of the same names later, and the README will render them automatically.
 
