@@ -38,8 +38,19 @@ export interface SerialSettings {
   flowControl: "none" | "rtscts" | "xonxoff";
 }
 
+export interface SshSettings {
+  port: number;
+  username: string;
+  password: string;
+  readyTimeoutMs: number;
+}
+
+export type ConsoleMode = "mock" | "serial" | "ssh";
+export type ConnectionSettings = SerialSettings | SshSettings;
+
 export interface AppSettings {
   serial: SerialSettings;
+  ssh: SshSettings;
   defaultDriver?: string;
   sendIntervalMs: number;
   logDir: string;

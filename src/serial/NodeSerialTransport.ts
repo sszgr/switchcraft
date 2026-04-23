@@ -1,7 +1,7 @@
-import type { SerialSettings } from "../types.js";
-import type { SerialTransport } from "../session.js";
+import type { ConnectionSettings, SerialSettings } from "../types.js";
+import type { ConsoleTransport } from "../session.js";
 
-export class NodeSerialTransport implements SerialTransport {
+export class NodeSerialTransport implements ConsoleTransport {
   private dataListener: ((chunk: string) => void) | undefined;
   private closeListener: (() => void) | undefined;
 
@@ -12,7 +12,8 @@ export class NodeSerialTransport implements SerialTransport {
     on(event: "close", listener: () => void): void;
   } | null = null;
 
-  async open(path: string, settings: SerialSettings): Promise<void> {
+  async open(path: string, settings: ConnectionSettings): Promise<void> {
+    const serial = settings as SerialSettings;
     const serialport = await loadSerialPort();
     if (!serialport?.SerialPort) {
       throw new Error("Package 'serialport' is not installed. Use MockTransport or install serialport.");
@@ -21,13 +22,13 @@ export class NodeSerialTransport implements SerialTransport {
     const { SerialPort } = serialport;
     const port = new SerialPort({
       path,
-      baudRate: settings.baudRate,
-      dataBits: settings.dataBits,
-      stopBits: settings.stopBits,
-      parity: settings.parity,
-      rtscts: settings.flowControl === "rtscts",
-      xon: settings.flowControl === "xonxoff",
-      xoff: settings.flowControl === "xonxoff",
+      baudRate: serial.baudRate,
+      dataBits: serial.dataBits,
+      stopBits: serial.stopBits,
+      parity: serial.parity,
+      rtscts: serial.flowControl === "rtscts",
+      xon: serial.flowControl === "xonxoff",
+      xoff: serial.flowControl === "xonxoff",
       autoOpen: false
     });
 

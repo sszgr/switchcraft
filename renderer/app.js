@@ -91,6 +91,11 @@ const I18N = {
     commandLines: "{{count}} 行",
     mockLabel: "Mock",
     serialLabel: "Serial",
+    sshLabel: "SSH",
+    sshHostLabel: "SSH 主机",
+    sshPortLabel: "SSH 端口",
+    sshUserLabel: "SSH 用户名",
+    sshPasswordLabel: "SSH 密码",
     noPorts: "无可用端口",
     portOnlineShort: "在线",
     portOfflineShort: "离线",
@@ -183,6 +188,11 @@ const I18N = {
     commandLines: "{{count}} lines",
     mockLabel: "Mock",
     serialLabel: "Serial",
+    sshLabel: "SSH",
+    sshHostLabel: "SSH Host",
+    sshPortLabel: "SSH Port",
+    sshUserLabel: "SSH Username",
+    sshPasswordLabel: "SSH Password",
     noPorts: "No available ports",
     portOnlineShort: "online",
     portOfflineShort: "offline",
@@ -235,11 +245,25 @@ const el = {
   portSelect: document.getElementById("portSelect"),
   refreshPortsBtn: document.getElementById("refreshPortsBtn"),
   driverSelect: document.getElementById("driverSelect"),
+  serialPortRow: document.getElementById("serialPortRow"),
+  baudField: document.getElementById("baudField"),
   baudRateInput: document.getElementById("baudRateInput"),
+  dataBitsField: document.getElementById("dataBitsField"),
   dataBitsSelect: document.getElementById("dataBitsSelect"),
+  stopBitsField: document.getElementById("stopBitsField"),
   stopBitsSelect: document.getElementById("stopBitsSelect"),
+  parityField: document.getElementById("parityField"),
   paritySelect: document.getElementById("paritySelect"),
+  flowField: document.getElementById("flowField"),
   flowSelect: document.getElementById("flowSelect"),
+  sshHostField: document.getElementById("sshHostField"),
+  sshHostInput: document.getElementById("sshHostInput"),
+  sshPortField: document.getElementById("sshPortField"),
+  sshPortInput: document.getElementById("sshPortInput"),
+  sshUserField: document.getElementById("sshUserField"),
+  sshUserInput: document.getElementById("sshUserInput"),
+  sshPasswordField: document.getElementById("sshPasswordField"),
+  sshPasswordInput: document.getElementById("sshPasswordInput"),
 
   templateSummary: document.getElementById("templateSummary"),
   paramsTitle: document.getElementById("paramsTitle"),
@@ -258,6 +282,7 @@ const el = {
   paneLog: document.getElementById("paneLog"),
   previewCopyBtn: document.getElementById("previewCopyBtn"),
   clearConsoleBtn: document.getElementById("clearConsoleBtn"),
+  logCopyBtn: document.getElementById("logCopyBtn"),
   clearLogBtn: document.getElementById("clearLogBtn"),
   latestExecLog: document.getElementById("latestExecLog"),
   consoleBox: document.getElementById("consoleBox"),
@@ -319,6 +344,10 @@ function applyI18n() {
   setText("stopBitsLabel", t("stopBitsLabel"));
   setText("parityLabel", t("parityLabel"));
   setText("flowLabel", t("flowLabel"));
+  setText("sshHostLabel", t("sshHostLabel"));
+  setText("sshPortLabel", t("sshPortLabel"));
+  setText("sshUserLabel", t("sshUserLabel"));
+  setText("sshPasswordLabel", t("sshPasswordLabel"));
   setText("paramsTitle", t("paramsTitle"));
   setText("previewBtn", t("previewBtn"));
   setText("runBtn", t("runBtn"));
@@ -327,6 +356,7 @@ function applyI18n() {
   setText("tabLogPane", t("opLogTitle"));
   setText("previewCopyBtn", t("copyPreviewBtn"));
   setText("clearConsoleBtn", t("clearConsoleBtn"));
+  setText("logCopyBtn", t("copyPreviewBtn"));
   setText("clearLogBtn", t("clearLogBtn"));
   setText("connectBtn", t("connectBtn"));
   setText("disconnectBtn", t("disconnectBtn"));
@@ -358,11 +388,13 @@ function applyI18n() {
   setConsoleStatus(state.consoleConnected ? t("consoleConnected") : t("consoleDisconnected"));
   el.modeSelect.options[0].text = t("mockLabel");
   el.modeSelect.options[1].text = t("serialLabel");
+  el.modeSelect.options[2].text = t("sshLabel");
 
   markDirty(state.editorDirty);
   renderTemplateList();
   renderSummary();
   renderPorts();
+  updateConnectionModeUI();
   renderLatestLog();
 }
 
@@ -789,6 +821,29 @@ function updateRefreshPortButton() {
   el.refreshPortsBtn.textContent = state.portRefreshing ? t("refreshingPortsBtn") : t("refreshPortsBtn");
 }
 
+function setHidden(node, hidden) {
+  if (!node) return;
+  node.classList.toggle("hidden", hidden);
+}
+
+function updateConnectionModeUI() {
+  const mode = el.modeSelect.value;
+  const serialHidden = mode !== "serial";
+  const sshHidden = mode !== "ssh";
+
+  setHidden(el.serialPortRow?.parentElement, serialHidden);
+  setHidden(el.baudField, serialHidden);
+  setHidden(el.dataBitsField, serialHidden);
+  setHidden(el.stopBitsField, serialHidden);
+  setHidden(el.parityField, serialHidden);
+  setHidden(el.flowField, serialHidden);
+
+  setHidden(el.sshHostField, sshHidden);
+  setHidden(el.sshPortField, sshHidden);
+  setHidden(el.sshUserField, sshHidden);
+  setHidden(el.sshPasswordField, sshHidden);
+}
+
 function normalizePortPath(path) {
   return String(path ?? "")
     .trim()
@@ -911,6 +966,11 @@ function isPortOnline(portPath) {
 }
 
 async function refreshPorts() {
+  if (el.modeSelect.value !== "serial") {
+    state.ports = [];
+    renderPorts();
+    return;
+  }
   state.portRefreshing = true;
   updateRefreshPortButton();
   try {
@@ -925,6 +985,28 @@ async function refreshPorts() {
 async function copyPreviewCommands() {
   const text = (el.previewBox.textContent || "").trim();
   if (!text) return;
+  await copyText(text);
+
+  const oldText = t("copyPreviewBtn");
+  el.previewCopyBtn.textContent = t("copiedPreviewBtn");
+  setTimeout(() => {
+    el.previewCopyBtn.textContent = oldText;
+  }, 1200);
+}
+
+async function copyLogCommands() {
+  const text = (el.opLogBox.textContent || "").trim();
+  if (!text) return;
+  await copyText(text);
+
+  const oldText = t("copyPreviewBtn");
+  el.logCopyBtn.textContent = t("copiedPreviewBtn");
+  setTimeout(() => {
+    el.logCopyBtn.textContent = oldText;
+  }, 1200);
+}
+
+async function copyText(text) {
   if (navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(text);
   } else {
@@ -938,16 +1020,13 @@ async function copyPreviewCommands() {
     document.execCommand("copy");
     document.body.removeChild(shadow);
   }
-
-  const oldText = t("copyPreviewBtn");
-  el.previewCopyBtn.textContent = t("copiedPreviewBtn");
-  setTimeout(() => {
-    el.previewCopyBtn.textContent = oldText;
-  }, 1200);
 }
 
 async function refreshPortsForModeChange() {
-  await refreshPorts();
+  updateConnectionModeUI();
+  if (el.modeSelect.value === "serial") {
+    await refreshPorts();
+  }
 }
 
 function renderDrivers() {
@@ -1113,13 +1192,28 @@ function getSerialSettings() {
   };
 }
 
+function getSshSettings() {
+  return {
+    port: Number(el.sshPortInput.value || 22),
+    username: (el.sshUserInput.value || "").trim(),
+    password: el.sshPasswordInput.value || "",
+    readyTimeoutMs: 10000
+  };
+}
+
 function getConsoleConnectPayload() {
   const mode = el.modeSelect.value;
   return {
     mode,
-    portPath: mode === "serial" ? el.portSelect.value || undefined : undefined,
+    target:
+      mode === "serial"
+        ? el.portSelect.value || undefined
+        : mode === "ssh"
+          ? (el.sshHostInput.value || "").trim() || undefined
+          : undefined,
     driverId: el.driverSelect.value || undefined,
-    serial: getSerialSettings()
+    serial: getSerialSettings(),
+    ssh: getSshSettings()
   };
 }
 
@@ -1132,6 +1226,9 @@ async function refreshConsoleState() {
 async function connectConsole() {
   if (el.modeSelect.value === "serial" && (!el.portSelect.value || !isPortOnline(el.portSelect.value))) {
     throw new Error(t("noPorts"));
+  }
+  if (el.modeSelect.value === "ssh" && !el.sshHostInput.value.trim()) {
+    throw new Error(t("sshHostLabel"));
   }
   await runtimeApi.connectConsole(getConsoleConnectPayload());
   state.consoleConnected = true;
@@ -1165,9 +1262,15 @@ async function runExecute() {
       templatePath,
       params,
       mode: el.modeSelect.value,
-      portPath: el.modeSelect.value === "serial" ? el.portSelect.value || undefined : undefined,
+      target:
+        el.modeSelect.value === "serial"
+          ? el.portSelect.value || undefined
+          : el.modeSelect.value === "ssh"
+            ? (el.sshHostInput.value || "").trim() || undefined
+            : undefined,
       driverId: el.driverSelect.value || undefined,
-      serial: getSerialSettings()
+      serial: getSerialSettings(),
+      ssh: getSshSettings()
     });
 
     const ok = !!result?.success;
@@ -1202,8 +1305,12 @@ async function boot() {
   el.stopBitsSelect.value = String(settings.serial?.stopBits ?? 1);
   el.paritySelect.value = settings.serial?.parity ?? "none";
   el.flowSelect.value = settings.serial?.flowControl ?? "none";
+  el.sshPortInput.value = String(settings.ssh?.port ?? 22);
+  el.sshUserInput.value = settings.ssh?.username ?? "admin";
+  el.sshPasswordInput.value = settings.ssh?.password ?? "";
   if (settings.defaultDriver) el.driverSelect.value = settings.defaultDriver;
   el.modeSelect.value = "serial";
+  updateConnectionModeUI();
 
   await refreshTemplateList();
   markStartup("templates-listed");
@@ -1273,6 +1380,7 @@ el.langSelect.addEventListener("change", async () => {
 el.aboutBtn.addEventListener("click", openAboutModal);
 el.aboutCloseBtn.addEventListener("click", closeAboutModal);
 el.previewCopyBtn.addEventListener("click", () => copyPreviewCommands().catch(showError));
+el.logCopyBtn.addEventListener("click", () => copyLogCommands().catch(showError));
 el.clearConsoleBtn.addEventListener("click", () => {
   terminal?.clear();
   terminal?.focus();

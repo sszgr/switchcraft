@@ -10,16 +10,17 @@ import { builtinDrivers, getDriverById } from "../src/drivers.js";
 import { ExecutionEngine } from "../src/executor.js";
 import { RunLogger } from "../src/logger.js";
 import { ConsoleSession } from "../src/session.js";
+import { NodeSshTransport } from "../src/ssh/NodeSshTransport.js";
 import { MockTransport } from "../src/serial/MockTransport.js";
 import { NodeSerialTransport } from "../src/serial/NodeSerialTransport.js";
 import { loadTemplate, renderScript, validateParams } from "../src/template.js";
-import type { AppSettings, SerialSettings } from "../src/types.js";
+import type { AppSettings, ConsoleMode, SerialSettings, SshSettings } from "../src/types.js";
 
 let mainWindow: BrowserWindow | null = null;
 let activeConsole:
   | {
-      mode: "mock" | "serial";
-      portPath: string;
+      mode: ConsoleMode;
+      target: string;
       driverId: string;
       session: ConsoleSession;
       logger: RunLogger;
@@ -368,9 +369,10 @@ ipcMain.handle("template:preview", (_event, templatePath: string, params: Record
 interface ExecutePayload {
   templatePath: string;
   params: Record<string, unknown>;
-  mode: "mock" | "serial";
-  portPath?: string;
+  mode: ConsoleMode;
+  target?: string;
   serial?: Partial<SerialSettings>;
+  ssh?: Partial<SshSettings>;
   driverId?: string;
 }
 
@@ -425,32 +427,42 @@ function bindSessionEvents(session: ConsoleSession, logger: RunLogger): void {
 }
 
 async function buildSession(opts: {
-  mode: "mock" | "serial";
-  portPath?: string;
+  mode: ConsoleMode;
+  target?: string;
   serial?: Partial<SerialSettings>;
+  ssh?: Partial<SshSettings>;
   driverId?: string;
 }) {
   const settings = readAppSettings();
   const driver = resolveDriver(opts.driverId, settings);
-  const transport = opts.mode === "serial" ? new NodeSerialTransport() : new MockTransport();
+  const transport =
+    opts.mode === "serial" ? new NodeSerialTransport() : opts.mode === "ssh" ? new NodeSshTransport() : new MockTransport();
   const serial: SerialSettings = {
     ...settings.serial,
     ...(opts.serial ?? {})
   };
+  const ssh: SshSettings = {
+    ...settings.ssh,
+    ...(opts.ssh ?? {})
+  };
 
-  let portPath = opts.portPath;
-  if (!portPath) {
+  let target = opts.target?.trim();
+  if (opts.mode === "serial" && !target) {
     const ports = await transport.listPorts();
-    portPath = ports[0]?.path;
+    target = ports[0]?.path;
   }
-  if (!portPath) throw new Error("No serial port available.");
+  if (opts.mode === "serial" && !target) throw new Error("No serial port available.");
+  if (opts.mode === "ssh" && !target) throw new Error("SSH host is required.");
+  if (opts.mode === "ssh" && !ssh.username.trim()) throw new Error("SSH username is required.");
+
+  const connectionSettings = opts.mode === "ssh" ? ssh : serial;
 
   const session = new ConsoleSession(transport, driver, {
     autoConfirmYN: settings.autoConfirmYN,
     commandTimeoutMs: settings.commandTimeoutMs,
     sendIntervalMs: settings.sendIntervalMs
   });
-  return { settings, driver, serial, portPath, session };
+  return { settings, driver, serial, ssh, target: target ?? "mock", session, connectionSettings };
 }
 
 async function closeActiveConsole(): Promise<void> {
@@ -470,18 +482,24 @@ ipcMain.handle(
   "console:connect",
   async (
     _event,
-    payload: { mode: "mock" | "serial"; portPath?: string; serial?: Partial<SerialSettings>; driverId?: string }
+    payload: {
+      mode: ConsoleMode;
+      target?: string;
+      serial?: Partial<SerialSettings>;
+      ssh?: Partial<SshSettings>;
+      driverId?: string;
+    }
   ) => {
     await closeActiveConsole();
     const built = await buildSession(payload);
     const logger = createRunLogger("console");
     bindSessionEvents(built.session, logger);
-    await built.session.connect(built.portPath, built.serial);
+    await built.session.connect(built.target, built.connectionSettings);
     await built.session.sendRaw("\r");
 
     activeConsole = {
       mode: payload.mode,
-      portPath: built.portPath,
+      target: built.target,
       driverId: built.driver.id,
       session: built.session,
       logger
@@ -490,7 +508,7 @@ ipcMain.handle(
     const state = {
       connected: true,
       mode: payload.mode,
-      portPath: built.portPath,
+      target: built.target,
       driverId: built.driver.id
     };
     mainWindow?.webContents.send("console:state", state);
@@ -514,7 +532,7 @@ ipcMain.handle("console:get-state", () => {
   return {
     connected: true,
     mode: activeConsole.mode,
-    portPath: activeConsole.portPath,
+    target: activeConsole.target,
     driverId: activeConsole.driverId
   };
 });
@@ -528,17 +546,20 @@ async function executeRun(payload: ExecutePayload) {
   let transient = false;
 
   if (activeConsole) {
+    if (activeConsole.mode !== payload.mode) {
+      throw new Error("Console mode mismatch. Reconnect console with selected mode.");
+    }
     if (activeConsole.driverId !== driver.id) {
       throw new Error("Console driver mismatch. Reconnect console with selected driver.");
     }
-    if (payload.mode === "serial" && payload.portPath && activeConsole.portPath !== payload.portPath) {
-      throw new Error("Console port mismatch. Reconnect console with selected COM port.");
+    if (payload.target && activeConsole.target !== payload.target) {
+      throw new Error("Console target mismatch. Reconnect console with selected target.");
     }
     session = activeConsole.session;
   } else {
     const built = await buildSession(payload);
     bindSessionEvents(built.session, logger);
-    await built.session.connect(built.portPath, built.serial);
+    await built.session.connect(built.target, built.connectionSettings);
     await built.session.sendRaw("\r");
     session = built.session;
     transient = true;

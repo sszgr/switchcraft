@@ -20,6 +20,12 @@ declare global {
           parity: "none" | "even" | "odd";
           flowControl: "none" | "rtscts" | "xonxoff";
         };
+        ssh: {
+          port: number;
+          username: string;
+          password: string;
+          readyTimeoutMs: number;
+        };
         defaultDriver?: string;
       }>;
       setLocale: (locale: "zh-CN" | "en-US") => Promise<unknown>;
@@ -54,8 +60,8 @@ declare global {
       executeRun: (payload: {
         templatePath: string;
         params: Record<string, unknown>;
-        mode: "mock" | "serial";
-        portPath?: string;
+        mode: "mock" | "serial" | "ssh";
+        target?: string;
         serial?: {
           baudRate?: number;
           dataBits?: 7 | 8;
@@ -63,11 +69,40 @@ declare global {
           parity?: "none" | "even" | "odd";
           flowControl?: "none" | "rtscts" | "xonxoff";
         };
+        ssh?: {
+          port?: number;
+          username?: string;
+          password?: string;
+          readyTimeoutMs?: number;
+        };
         driverId?: string;
       }) => Promise<unknown>;
       executeMock: (templatePath: string, params: Record<string, unknown>) => Promise<unknown>;
       onRunLog: (handler: (item: { level: string; message: string }) => void) => () => void;
       onRunDone: (handler: (result: unknown) => void) => () => void;
+      connectConsole: (payload: {
+        mode: "mock" | "serial" | "ssh";
+        target?: string;
+        serial?: {
+          baudRate?: number;
+          dataBits?: 7 | 8;
+          stopBits?: 1 | 2;
+          parity?: "none" | "even" | "odd";
+          flowControl?: "none" | "rtscts" | "xonxoff";
+        };
+        ssh?: {
+          port?: number;
+          username?: string;
+          password?: string;
+          readyTimeoutMs?: number;
+        };
+        driverId?: string;
+      }) => Promise<unknown>;
+      disconnectConsole: () => Promise<unknown>;
+      sendConsoleCommand: (command: string) => Promise<unknown>;
+      getConsoleState: () => Promise<unknown>;
+      onConsoleLog: (handler: (item: { level: string; message: string }) => void) => () => void;
+      onConsoleState: (handler: (state: unknown) => void) => () => void;
     };
   }
 }

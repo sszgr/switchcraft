@@ -19,8 +19,8 @@ contextBridge.exposeInMainWorld("switchcraft", {
   executeRun: (payload: {
     templatePath: string;
     params: Record<string, unknown>;
-    mode: "mock" | "serial";
-    portPath?: string;
+    mode: "mock" | "serial" | "ssh";
+    target?: string;
     serial?: {
       baudRate?: number;
       dataBits?: 7 | 8;
@@ -28,10 +28,20 @@ contextBridge.exposeInMainWorld("switchcraft", {
       parity?: "none" | "even" | "odd";
       flowControl?: "none" | "rtscts" | "xonxoff";
     };
+    ssh?: {
+      port?: number;
+      username?: string;
+      password?: string;
+      readyTimeoutMs?: number;
+    };
     driverId?: string;
   }) => ipcRenderer.invoke("run:execute", payload),
   executeMock: (templatePath: string, params: Record<string, unknown>) =>
     ipcRenderer.invoke("run:execute-mock", templatePath, params),
+  connectConsole: (payload: unknown) => ipcRenderer.invoke("console:connect", payload),
+  disconnectConsole: () => ipcRenderer.invoke("console:disconnect"),
+  sendConsoleCommand: (command: string) => ipcRenderer.invoke("console:send-command", command),
+  getConsoleState: () => ipcRenderer.invoke("console:get-state"),
   onRunLog: (handler: (item: LogItem) => void) => {
     const listener = (_event: unknown, payload: LogItem) => handler(payload);
     ipcRenderer.on("run:log", listener);
@@ -41,5 +51,15 @@ contextBridge.exposeInMainWorld("switchcraft", {
     const listener = (_event: unknown, payload: unknown) => handler(payload);
     ipcRenderer.on("run:done", listener);
     return () => ipcRenderer.removeListener("run:done", listener);
+  },
+  onConsoleLog: (handler: (item: LogItem) => void) => {
+    const listener = (_event: unknown, payload: LogItem) => handler(payload);
+    ipcRenderer.on("console:log", listener);
+    return () => ipcRenderer.removeListener("console:log", listener);
+  },
+  onConsoleState: (handler: (state: unknown) => void) => {
+    const listener = (_event: unknown, payload: unknown) => handler(payload);
+    ipcRenderer.on("console:state", listener);
+    return () => ipcRenderer.removeListener("console:state", listener);
   }
 });

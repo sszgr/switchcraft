@@ -84,19 +84,20 @@
 
                 <div class="serial-grid">
                   <div>
-                    <label id="comPortLabel" class="label" for="portSelect"></label>
-                    <div class="inline-row">
-                      <select id="portSelect"></select>
-                      <button id="refreshPortsBtn" class="btn"></button>
-                    </div>
-                  </div>
-
-                  <div>
                     <label id="modeLabel" class="label" for="modeSelect"></label>
                     <select id="modeSelect">
                       <option value="mock">Mock</option>
                       <option value="serial">Serial</option>
+                      <option value="ssh">SSH</option>
                     </select>
+                  </div>
+
+                  <div>
+                    <label id="comPortLabel" class="label" for="portSelect"></label>
+                    <div id="serialPortRow" class="inline-row">
+                      <select id="portSelect"></select>
+                      <button id="refreshPortsBtn" class="btn"></button>
+                    </div>
                   </div>
 
                   <div>
@@ -104,12 +105,12 @@
                     <select id="driverSelect"></select>
                   </div>
 
-                  <div>
+                  <div id="baudField">
                     <label id="baudLabel" class="label" for="baudRateInput"></label>
                     <input id="baudRateInput" type="number" value="9600" />
                   </div>
 
-                  <div>
+                  <div id="dataBitsField">
                     <label id="dataBitsLabel" class="label" for="dataBitsSelect"></label>
                     <select id="dataBitsSelect">
                       <option value="8">8</option>
@@ -117,7 +118,7 @@
                     </select>
                   </div>
 
-                  <div>
+                  <div id="stopBitsField">
                     <label id="stopBitsLabel" class="label" for="stopBitsSelect"></label>
                     <select id="stopBitsSelect">
                       <option value="1">1</option>
@@ -125,7 +126,7 @@
                     </select>
                   </div>
 
-                  <div>
+                  <div id="parityField">
                     <label id="parityLabel" class="label" for="paritySelect"></label>
                     <select id="paritySelect">
                       <option value="none">none</option>
@@ -134,13 +135,33 @@
                     </select>
                   </div>
 
-                  <div>
+                  <div id="flowField">
                     <label id="flowLabel" class="label" for="flowSelect"></label>
                     <select id="flowSelect">
                       <option value="none">none</option>
                       <option value="rtscts">rtscts</option>
                       <option value="xonxoff">xonxoff</option>
                     </select>
+                  </div>
+
+                  <div id="sshHostField" class="hidden">
+                    <label id="sshHostLabel" class="label" for="sshHostInput"></label>
+                    <input id="sshHostInput" type="text" placeholder="192.168.1.1" />
+                  </div>
+
+                  <div id="sshPortField" class="hidden">
+                    <label id="sshPortLabel" class="label" for="sshPortInput"></label>
+                    <input id="sshPortInput" type="number" value="22" />
+                  </div>
+
+                  <div id="sshUserField" class="hidden">
+                    <label id="sshUserLabel" class="label" for="sshUserInput"></label>
+                    <input id="sshUserInput" type="text" placeholder="admin" />
+                  </div>
+
+                  <div id="sshPasswordField" class="hidden">
+                    <label id="sshPasswordLabel" class="label" for="sshPasswordInput"></label>
+                    <input id="sshPasswordInput" type="password" />
                   </div>
                 </div>
                 <div class="row-actions exec-config-actions">
@@ -193,6 +214,7 @@
               <section id="paneLog" class="right-pane">
                 <pre id="opLogBox" class="output op-log-box right-output"></pre>
                 <div class="row-actions right-actions">
+                  <button id="logCopyBtn" class="btn btn-compact" type="button"></button>
                   <button id="clearLogBtn" class="btn btn-compact" type="button"></button>
                 </div>
               </section>

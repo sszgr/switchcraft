@@ -1,5 +1,5 @@
-import type { SerialSettings } from "../types.js";
-import type { SerialTransport } from "../session.js";
+import type { ConnectionSettings } from "../types.js";
+import type { ConsoleTransport } from "../session.js";
 
 const EOL = "\r\n";
 const fakePorts = [{ path: "COM1", manufacturer: "MockLab" }];
@@ -38,7 +38,7 @@ function createInterfaceDefaults(): Map<string, IfConfig> {
   return map;
 }
 
-export class MockTransport implements SerialTransport {
+export class MockTransport implements ConsoleTransport {
   private dataListener: ((chunk: string) => void) | undefined;
   private closeListener: (() => void) | undefined;
   private opened = false;
@@ -53,7 +53,7 @@ export class MockTransport implements SerialTransport {
     interfaces: createInterfaceDefaults()
   };
 
-  async open(_path: string, _settings: SerialSettings): Promise<void> {
+  async open(_path: string, _settings: ConnectionSettings): Promise<void> {
     this.opened = true;
     this.inputBuffer = "";
     this.lastCharWasCR = false;

@@ -1,8 +1,8 @@
 import { EventEmitter } from "node:events";
-import type { DeviceDriver, SerialSettings } from "./types.js";
+import type { ConnectionSettings, DeviceDriver } from "./types.js";
 
-export interface SerialTransport {
-  open(path: string, settings: SerialSettings): Promise<void>;
+export interface ConsoleTransport {
+  open(target: string, settings: ConnectionSettings): Promise<void>;
   write(data: string): Promise<void>;
   close(): Promise<void>;
   listPorts(): Promise<Array<{ path: string; manufacturer?: string }>>;
@@ -22,7 +22,7 @@ export class ConsoleSession extends EventEmitter {
   private interactiveTxBuffer = "";
 
   constructor(
-    private readonly transport: SerialTransport,
+    private readonly transport: ConsoleTransport,
     private readonly driver: DeviceDriver,
     private readonly options: SessionOptions
   ) {
@@ -38,8 +38,8 @@ export class ConsoleSession extends EventEmitter {
     });
   }
 
-  async connect(portPath: string, settings: SerialSettings): Promise<void> {
-    await this.transport.open(portPath, settings);
+  async connect(target: string, settings: ConnectionSettings): Promise<void> {
+    await this.transport.open(target, settings);
     this.connected = true;
   }
 

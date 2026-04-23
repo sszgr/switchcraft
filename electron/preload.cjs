@@ -14,6 +14,10 @@ contextBridge.exposeInMainWorld('switchcraft', {
   previewTemplate: (templatePath, params) => ipcRenderer.invoke('template:preview', templatePath, params),
   executeRun: (payload) => ipcRenderer.invoke('run:execute', payload),
   executeMock: (templatePath, params) => ipcRenderer.invoke('run:execute-mock', templatePath, params),
+  connectConsole: (payload) => ipcRenderer.invoke('console:connect', payload),
+  disconnectConsole: () => ipcRenderer.invoke('console:disconnect'),
+  sendConsoleCommand: (command) => ipcRenderer.invoke('console:send-command', command),
+  getConsoleState: () => ipcRenderer.invoke('console:get-state'),
   onRunLog: (handler) => {
     const listener = (_event, payload) => handler(payload);
     ipcRenderer.on('run:log', listener);
@@ -23,5 +27,15 @@ contextBridge.exposeInMainWorld('switchcraft', {
     const listener = (_event, payload) => handler(payload);
     ipcRenderer.on('run:done', listener);
     return () => ipcRenderer.removeListener('run:done', listener);
+  },
+  onConsoleLog: (handler) => {
+    const listener = (_event, payload) => handler(payload);
+    ipcRenderer.on('console:log', listener);
+    return () => ipcRenderer.removeListener('console:log', listener);
+  },
+  onConsoleState: (handler) => {
+    const listener = (_event, payload) => handler(payload);
+    ipcRenderer.on('console:state', listener);
+    return () => ipcRenderer.removeListener('console:state', listener);
   }
 });

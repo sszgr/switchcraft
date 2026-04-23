@@ -29,9 +29,14 @@
       "package.json"
     ],
     "win": {
-      "target": ["nsis", "portable"],
+      "target": [
+        "nsis",
+        "portable"
+      ],
       "signtoolOptions": {
-        "publisherName": ["微信公众号: 碎碎冰安全"]
+        "publisherName": [
+          "微信公众号: 碎碎冰安全"
+        ]
       },
       "artifactName": "SwitchCraft-${version}-${arch}.${ext}"
     },
@@ -42,10 +47,12 @@
     }
   },
   "dependencies": {
+    "@types/ssh2": "^1.15.5",
     "@xterm/addon-fit": "^0.10.0",
     "@xterm/xterm": "^5.5.0",
     "js-yaml": "^4.1.0",
-    "serialport": "^13.0.0"
+    "serialport": "^13.0.0",
+    "ssh2": "^1.17.0"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",

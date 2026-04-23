@@ -13,6 +13,12 @@ export const defaultSettings: AppSettings = {
     parity: "none",
     flowControl: "none"
   },
+  ssh: {
+    port: 22,
+    username: "admin",
+    password: "",
+    readyTimeoutMs: 10000
+  },
   sendIntervalMs: 50,
   logDir: defaultLogDir,
   autoConfirmYN: false,
@@ -31,6 +37,10 @@ export function loadSettings(filePath = "settings.json"): AppSettings {
     serial: {
       ...defaultSettings.serial,
       ...(raw.serial ?? {})
+    },
+    ssh: {
+      ...defaultSettings.ssh,
+      ...(raw.ssh ?? {})
     }
   };
 }
